@@ -51,20 +51,24 @@ public class ShellRunner {
     private static final String HELP_2 = "-h"; //$NON-NLS-1$
 
     public static void main(String[] args) {
+        //没有参数时打印帮助信息
         if (args.length == 0) {
             usage();
             System.exit(0);
             return; // only to satisfy compiler, never returns
         }
 
+        //解析参数
         Map<String, String> arguments = parseCommandLine(args);
 
+        //参数里有 HELP_1  HELP_2 都会转为 HELP_2 放在参数里，打印帮助
         if (arguments.containsKey(HELP_1)) {
             usage();
             System.exit(0);
             return; // only to satisfy compiler, never returns
         }
 
+        //没有配置文件报错
         if (!arguments.containsKey(CONFIG_FILE)) {
             writeLine(getString("RuntimeError.0")); //$NON-NLS-1$
             return;
@@ -72,6 +76,7 @@ public class ShellRunner {
 
         List<String> warnings = new ArrayList<>();
 
+        //取配置文件
         String configfile = arguments.get(CONFIG_FILE);
         File configurationFile = new File(configfile);
         if (!configurationFile.exists()) {
@@ -79,6 +84,7 @@ public class ShellRunner {
             return;
         }
 
+        //逗号分割，取所有的表
         Set<String> fullyqualifiedTables = new HashSet<>();
         if (arguments.containsKey(TABLES)) {
             StringTokenizer st = new StringTokenizer(arguments.get(TABLES), ","); //$NON-NLS-1$
@@ -90,6 +96,7 @@ public class ShellRunner {
             }
         }
 
+        //逗号分割，取所有的context ID ？？？
         Set<String> contexts = new HashSet<>();
         if (arguments.containsKey(CONTEXT_IDS)) {
             StringTokenizer st = new StringTokenizer(
