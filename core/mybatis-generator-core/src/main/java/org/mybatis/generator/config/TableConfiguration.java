@@ -135,6 +135,7 @@ public class TableConfiguration extends PropertyHolder {
         for (Map.Entry<IgnoredColumn, Boolean> entry : ignoredColumns
                 .entrySet()) {
             if (entry.getKey().matches(columnName)) {
+                //忽略的列标记下
                 entry.setValue(Boolean.TRUE);
                 return true;
             }

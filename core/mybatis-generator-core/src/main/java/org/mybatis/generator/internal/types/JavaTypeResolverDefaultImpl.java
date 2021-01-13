@@ -144,6 +144,7 @@ public class JavaTypeResolverDefaultImpl implements JavaTypeResolver {
 
         if (jdbcTypeInformation != null) {
             answer = jdbcTypeInformation.getFullyQualifiedJavaType();
+            //基础类型要转一下 可能有一些字段跟长度有关 需要再判断下
             answer = overrideDefaultType(introspectedColumn, answer);
         }
 

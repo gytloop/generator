@@ -172,6 +172,7 @@ public class DatabaseIntrospector {
             throws SQLException {
 
         // get the raw columns from the DB
+        //查询所有的列
         Map<ActualTableName, List<IntrospectedColumn>> columns = getColumns(tc);
 
         if (columns.isEmpty()) {
@@ -179,9 +180,11 @@ public class DatabaseIntrospector {
                     tc.getSchema(), tc.getTableName()));
             return Collections.emptyList();
         }
-
+        //去除忽略的列 根据列名或者正则忽略
         removeIgnoredColumns(tc, columns);
+        //解析JavaType和JDBCType
         calculateExtraColumnInformation(tc, columns);
+        //有配置override就要用override 重新设置
         applyColumnOverrides(tc, columns);
         calculateIdentityColumns(tc, columns);
 
@@ -249,6 +252,8 @@ public class DatabaseIntrospector {
         StringBuilder sb = new StringBuilder();
         Pattern pattern = null;
         String replaceString = null;
+        //<columnRenamingRule searchString="^flower_" replaceString="" />
+        //可以把表前缀后缀去掉
         if (tc.getColumnRenamingRule() != null) {
             pattern = Pattern.compile(tc.getColumnRenamingRule()
                     .getSearchString());
@@ -259,7 +264,8 @@ public class DatabaseIntrospector {
         for (Map.Entry<ActualTableName, List<IntrospectedColumn>> entry : columns
                 .entrySet()) {
             for (IntrospectedColumn introspectedColumn : entry.getValue()) {
-                String calculatedColumnName;
+                String calculatedColumnName;//列名称
+                //没有pattern 就用实际名称，没有就替换
                 if (pattern == null) {
                     calculatedColumnName = introspectedColumn
                             .getActualColumnName();
@@ -271,10 +277,12 @@ public class DatabaseIntrospector {
 
                 if (isTrue(tc
                         .getProperty(PropertyRegistry.TABLE_USE_ACTUAL_COLUMN_NAMES))) {
+                    //生成的列名称
                     introspectedColumn.setJavaProperty(
                             JavaBeansUtil.getValidPropertyName(calculatedColumnName));
                 } else if (isTrue(tc
                                 .getProperty(PropertyRegistry.TABLE_USE_COMPOUND_PROPERTY_NAMES))) {
+                    //拼个注释进来做列名称
                     sb.setLength(0);
                     sb.append(calculatedColumnName);
                     sb.append('_');
@@ -283,16 +291,19 @@ public class DatabaseIntrospector {
                     introspectedColumn.setJavaProperty(
                             JavaBeansUtil.getValidPropertyName(sb.toString()));
                 } else {
+                    //用驼峰做列名
                     introspectedColumn.setJavaProperty(
                             JavaBeansUtil.getCamelCaseString(calculatedColumnName, false));
                 }
 
+                //用jdbcType转JavaType
                 FullyQualifiedJavaType fullyQualifiedJavaType = javaTypeResolver
                         .calculateJavaType(introspectedColumn);
 
                 if (fullyQualifiedJavaType != null) {
                     introspectedColumn
                             .setFullyQualifiedJavaType(fullyQualifiedJavaType);
+                    // 对应的jdbcType可能有误，还是从JavaType里面取对应的
                     introspectedColumn.setJdbcTypeName(javaTypeResolver
                             .calculateJdbcTypeName(introspectedColumn));
                 } else {
@@ -303,6 +314,7 @@ public class DatabaseIntrospector {
                         warn = false;
                     }
 
+                    //是否配置了override 配置了解析不到类型也不告警
                     ColumnOverride co = tc.getColumnOverride(introspectedColumn
                             .getActualColumnName());
                     if (co != null
@@ -311,6 +323,7 @@ public class DatabaseIntrospector {
                     }
 
                     // if the type is not supported, then we'll report a warning
+                    // 给个默认类型
                     if (warn) {
                         introspectedColumn
                                 .setFullyQualifiedJavaType(FullyQualifiedJavaType
@@ -325,13 +338,13 @@ public class DatabaseIntrospector {
                         warnings.add(warning);
                     }
                 }
-
+                //开启关键字
                 if (context.autoDelimitKeywords()
                         && SqlReservedWords.containsWord(introspectedColumn
                             .getActualColumnName())) {
                     introspectedColumn.setColumnNameDelimited(true);
                 }
-
+                //所有列关键字
                 if (tc.isAllColumnDelimitingEnabled()) {
                     introspectedColumn.setColumnNameDelimited(true);
                 }

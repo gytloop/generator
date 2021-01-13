@@ -78,6 +78,7 @@ public class MyBatisGeneratorConfigurationParser {
         Configuration configuration = new Configuration();
 
         NodeList nodeList = rootNode.getChildNodes();
+        //遍历Node节点，解析配置
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node childNode = nodeList.item(i);
 
@@ -86,8 +87,11 @@ public class MyBatisGeneratorConfigurationParser {
             }
 
             if ("properties".equals(childNode.getNodeName())) { //$NON-NLS-1$
+                //只取配置的数据库链接信息，jdbc class loader等
+                //放在了 configurationProperties 中
                 parseProperties(childNode);
             } else if ("classPathEntry".equals(childNode.getNodeName())) { //$NON-NLS-1$
+                //加载classPath
                 parseClassPathEntry(configuration, childNode);
             } else if ("context".equals(childNode.getNodeName())) { //$NON-NLS-1$
                 parseContext(configuration, childNode);
@@ -100,6 +104,7 @@ public class MyBatisGeneratorConfigurationParser {
     protected void parseProperties(Node node)
             throws XMLParserException {
         Properties attributes = parseAttributes(node);
+        //配置文件地址，有且只有一个
         String resource = attributes.getProperty("resource"); //$NON-NLS-1$
         String url = attributes.getProperty("url"); //$NON-NLS-1$
 
@@ -145,6 +150,7 @@ public class MyBatisGeneratorConfigurationParser {
     private void parseContext(Configuration configuration, Node node) {
 
         Properties attributes = parseAttributes(node);
+        //model 生成方式
         String defaultModelType = attributes.getProperty("defaultModelType"); //$NON-NLS-1$
         String targetRuntime = attributes.getProperty("targetRuntime"); //$NON-NLS-1$
         String introspectedColumnImpl = attributes
@@ -671,10 +677,15 @@ public class MyBatisGeneratorConfigurationParser {
 
     protected void parseClassPathEntry(Configuration configuration, Node node) {
         Properties attributes = parseAttributes(node);
-
+        //添加classpath到配置文件中
         configuration.addClasspathEntry(attributes.getProperty("location")); //$NON-NLS-1$
     }
 
+    /**
+     * 解析property节点
+     * @param propertyHolder
+     * @param node
+     */
     protected void parseProperty(PropertyHolder propertyHolder, Node node) {
         Properties attributes = parseAttributes(node);
 
@@ -689,6 +700,7 @@ public class MyBatisGeneratorConfigurationParser {
         NamedNodeMap nnm = node.getAttributes();
         for (int i = 0; i < nnm.getLength(); i++) {
             Node attribute = nnm.item(i);
+            //把${}这种配置文件解析成具体的value
             String value = parsePropertyTokens(attribute.getNodeValue());
             attributes.put(attribute.getNodeName(), value);
         }

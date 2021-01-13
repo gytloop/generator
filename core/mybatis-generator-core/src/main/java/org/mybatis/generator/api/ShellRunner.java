@@ -96,7 +96,7 @@ public class ShellRunner {
             }
         }
 
-        //逗号分割，取所有的context ID ？？？
+        //逗号分割，取所有的context ID  配置文件中有根据context区分
         Set<String> contexts = new HashSet<>();
         if (arguments.containsKey(CONTEXT_IDS)) {
             StringTokenizer st = new StringTokenizer(
@@ -111,11 +111,12 @@ public class ShellRunner {
 
         try {
             ConfigurationParser cp = new ConfigurationParser(warnings);
+            //解析配置文件 加载class path，加载配置文件，表配置等
             Configuration config = cp.parseConfiguration(configurationFile);
 
             DefaultShellCallback shellCallback = new DefaultShellCallback(
                     arguments.containsKey(OVERWRITE));
-
+            //纯赋值 没有逻辑
             MyBatisGenerator myBatisGenerator = new MyBatisGenerator(config, shellCallback, warnings);
 
             ProgressCallback progressCallback = arguments.containsKey(VERBOSE) ? new VerboseProgressCallback()

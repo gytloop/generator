@@ -15,10 +15,11 @@
  */
 package org.mybatis.generator.config;
 
-import static org.mybatis.generator.internal.util.StringUtility.composeFullyQualifiedTableName;
-import static org.mybatis.generator.internal.util.StringUtility.isTrue;
-import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
-import static org.mybatis.generator.internal.util.messages.Messages.getString;
+import org.mybatis.generator.api.*;
+import org.mybatis.generator.internal.JDBCConnectionFactory;
+import org.mybatis.generator.internal.ObjectFactory;
+import org.mybatis.generator.internal.PluginAggregator;
+import org.mybatis.generator.internal.db.DatabaseIntrospector;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,22 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.mybatis.generator.api.CommentGenerator;
-import org.mybatis.generator.api.ConnectionFactory;
-import org.mybatis.generator.api.GeneratedJavaFile;
-import org.mybatis.generator.api.GeneratedKotlinFile;
-import org.mybatis.generator.api.GeneratedXmlFile;
-import org.mybatis.generator.api.IntrospectedTable;
-import org.mybatis.generator.api.JavaFormatter;
-import org.mybatis.generator.api.JavaTypeResolver;
-import org.mybatis.generator.api.KotlinFormatter;
-import org.mybatis.generator.api.Plugin;
-import org.mybatis.generator.api.ProgressCallback;
-import org.mybatis.generator.api.XmlFormatter;
-import org.mybatis.generator.internal.JDBCConnectionFactory;
-import org.mybatis.generator.internal.ObjectFactory;
-import org.mybatis.generator.internal.PluginAggregator;
-import org.mybatis.generator.internal.db.DatabaseIntrospector;
+import static org.mybatis.generator.internal.util.StringUtility.*;
+import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
 public class Context extends PropertyHolder {
 
@@ -129,8 +116,7 @@ public class Context extends PropertyHolder {
      * This method does a simple validate, it makes sure that all required fields have been filled in. It does not do
      * any more complex operations such as validating that database tables exist or validating that named columns exist
      *
-     * @param errors
-     *            the errors
+     * @param errors the errors
      */
     public void validate(List<String> errors) {
         if (!stringHasValue(id)) {
@@ -326,8 +312,8 @@ public class Context extends PropertyHolder {
      * and not for code generation.
      *
      * @return a list containing the results of table introspection. The list will be empty
-     *     if this method is called before introspectTables(), or if no tables are found that
-     *     match the configuration
+     * if this method is called before introspectTables(), or if no tables are found that
+     * match the configuration
      */
     public List<IntrospectedTable> getIntrospectedTables() {
         return introspectedTables;
@@ -351,28 +337,22 @@ public class Context extends PropertyHolder {
      * Introspect tables based on the configuration specified in the
      * constructor. This method is long running.
      *
-     * @param callback
-     *            a progress callback if progress information is desired, or
-     *            <code>null</code>
-     * @param warnings
-     *            any warning generated from this method will be added to the
-     *            List. Warnings are always Strings.
-     * @param fullyQualifiedTableNames
-     *            a set of table names to generate. The elements of the set must
-     *            be Strings that exactly match what's specified in the
-     *            configuration. For example, if table name = "foo" and schema =
-     *            "bar", then the fully qualified table name is "foo.bar". If
-     *            the Set is null or empty, then all tables in the configuration
-     *            will be used for code generation.
-     *
-     * @throws SQLException
-     *             if some error arises while introspecting the specified
-     *             database tables.
-     * @throws InterruptedException
-     *             if the progress callback reports a cancel
+     * @param callback                 a progress callback if progress information is desired, or
+     *                                 <code>null</code>
+     * @param warnings                 any warning generated from this method will be added to the
+     *                                 List. Warnings are always Strings.
+     * @param fullyQualifiedTableNames a set of table names to generate. The elements of the set must
+     *                                 be Strings that exactly match what's specified in the
+     *                                 configuration. For example, if table name = "foo" and schema =
+     *                                 "bar", then the fully qualified table name is "foo.bar". If
+     *                                 the Set is null or empty, then all tables in the configuration
+     *                                 will be used for code generation.
+     * @throws SQLException         if some error arises while introspecting the specified
+     *                              database tables.
+     * @throws InterruptedException if the progress callback reports a cancel
      */
     public void introspectTables(ProgressCallback callback,
-            List<String> warnings, Set<String> fullyQualifiedTableNames)
+                                 List<String> warnings, Set<String> fullyQualifiedTableNames)
             throws SQLException, InterruptedException {
 
         introspectedTables.clear();
@@ -389,24 +369,26 @@ public class Context extends PropertyHolder {
                     this, connection.getMetaData(), javaTypeResolver, warnings);
 
             for (TableConfiguration tc : tableConfigurations) {
+                //生成全表名称
                 String tableName = composeFullyQualifiedTableName(tc.getCatalog(), tc
-                                .getSchema(), tc.getTableName(), '.');
-
+                        .getSchema(), tc.getTableName(), '.');
+                //命令行输入的表校验
                 if (fullyQualifiedTableNames != null
                         && !fullyQualifiedTableNames.isEmpty()
                         && !fullyQualifiedTableNames.contains(tableName)) {
                     continue;
                 }
-
+                //有要生成的语句 没有就结束
                 if (!tc.areAnyStatementsEnabled()) {
                     warnings.add(getString("Warning.0", tableName)); //$NON-NLS-1$
                     continue;
                 }
 
                 callback.startTask(getString("Progress.1", tableName)); //$NON-NLS-1$
+                //代码生成的基类
                 List<IntrospectedTable> tables = databaseIntrospector
                         .introspectTables(tc);
-
+                //添加到全局里
                 if (tables != null) {
                     introspectedTables.addAll(tables);
                 }
@@ -429,10 +411,10 @@ public class Context extends PropertyHolder {
     }
 
     public void generateFiles(ProgressCallback callback,
-            List<GeneratedJavaFile> generatedJavaFiles,
-            List<GeneratedXmlFile> generatedXmlFiles,
-            List<GeneratedKotlinFile> generatedKotlinFiles,
-            List<String> warnings)
+                              List<GeneratedJavaFile> generatedJavaFiles,
+                              List<GeneratedXmlFile> generatedXmlFiles,
+                              List<GeneratedKotlinFile> generatedKotlinFiles,
+                              List<String> warnings)
             throws InterruptedException {
 
         pluginAggregator = new PluginAggregator();

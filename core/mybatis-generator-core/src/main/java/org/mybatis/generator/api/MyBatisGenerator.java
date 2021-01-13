@@ -240,6 +240,7 @@ public class MyBatisGenerator {
 
         // now run the introspections...
         int totalSteps = 0;
+        //要执行多少步 链接数据库算一次 一个表算一次
         for (Context context : contextsToRun) {
             totalSteps += context.getIntrospectionSteps();
         }
@@ -251,7 +252,9 @@ public class MyBatisGenerator {
         }
 
         // now run the generates
+
         totalSteps = 0;
+        //记录下执行次数
         for (Context context : contextsToRun) {
             totalSteps += context.getGenerationSteps();
         }
