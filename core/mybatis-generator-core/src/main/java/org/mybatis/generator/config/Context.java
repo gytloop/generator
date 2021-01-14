@@ -388,7 +388,7 @@ public class Context extends PropertyHolder {
                 //代码生成的基类
                 List<IntrospectedTable> tables = databaseIntrospector
                         .introspectTables(tc);
-                //添加到全局里
+                //添加到上下文里
                 if (tables != null) {
                     introspectedTables.addAll(tables);
                 }

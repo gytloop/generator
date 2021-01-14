@@ -186,6 +186,7 @@ public class DatabaseIntrospector {
         calculateExtraColumnInformation(tc, columns);
         //有配置override就要用override 重新设置
         applyColumnOverrides(tc, columns);
+        //自增列
         calculateIdentityColumns(tc, columns);
 
         List<IntrospectedTable> introspectedTables = calculateIntrospectedTables(
@@ -619,6 +620,7 @@ public class DatabaseIntrospector {
             // table
             // configuration, then some sort of DB default is being returned
             // and we don't want that in our SQL
+            // 从数据库拿表出来
             FullyQualifiedTable table = new FullyQualifiedTable(
                     stringHasValue(tc.getCatalog()) ? atn.getCatalog() : null,
                     stringHasValue(tc.getSchema()) ? atn.getSchema() : null,
@@ -636,12 +638,14 @@ public class DatabaseIntrospector {
             IntrospectedTable introspectedTable = ObjectFactory
                     .createIntrospectedTable(tc, table, context);
 
+            //生成表的对象和生成列的对象合起来
             for (IntrospectedColumn introspectedColumn : entry.getValue()) {
                 introspectedTable.addColumn(introspectedColumn);
             }
 
+            //从数据库拿主键
             calculatePrimaryKey(table, introspectedTable);
-
+            //取表的备注
             enhanceIntrospectedTable(introspectedTable);
 
             answer.add(introspectedTable);

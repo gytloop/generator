@@ -252,7 +252,6 @@ public class MyBatisGenerator {
         }
 
         // now run the generates
-
         totalSteps = 0;
         //记录下执行次数
         for (Context context : contextsToRun) {

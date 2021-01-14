@@ -318,6 +318,18 @@ public class ObjectFactory {
         return answer;
     }
 
+    public static IntrospectedColumn createIntrospectedColumn(Context context) {
+        String type = context.getIntrospectedColumnImpl();
+        if (!stringHasValue(type)) {
+            type = IntrospectedColumn.class.getName();
+        }
+
+        IntrospectedColumn answer = (IntrospectedColumn) createInternalObject(type);
+        answer.setContext(context);
+
+        return answer;
+    }
+
     /**
      * Creates an introspected table implementation that is only usable for validation .
      *
@@ -341,18 +353,6 @@ public class ObjectFactory {
         }
 
         IntrospectedTable answer = (IntrospectedTable) createInternalObject(type);
-        answer.setContext(context);
-
-        return answer;
-    }
-
-    public static IntrospectedColumn createIntrospectedColumn(Context context) {
-        String type = context.getIntrospectedColumnImpl();
-        if (!stringHasValue(type)) {
-            type = IntrospectedColumn.class.getName();
-        }
-
-        IntrospectedColumn answer = (IntrospectedColumn) createInternalObject(type);
         answer.setContext(context);
 
         return answer;

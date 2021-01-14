@@ -34,7 +34,6 @@ public class ColumnOverride extends PropertyHolder {
     private String typeHandler;
 
     private boolean isColumnNameDelimited;
-
     /**
      * If true, the column is a GENERATED ALWAYS column which means
      * that it should not be used in insert or update statements.
