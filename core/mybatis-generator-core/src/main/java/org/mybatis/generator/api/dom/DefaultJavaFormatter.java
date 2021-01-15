@@ -36,6 +36,7 @@ import org.mybatis.generator.config.Context;
 public class DefaultJavaFormatter implements JavaFormatter, CompilationUnitVisitor<String> {
     protected Context context;
 
+    //丢皮球模式 翻转一下调用方式
     @Override
     public String getFormattedContent(CompilationUnit compilationUnit) {
         return compilationUnit.accept(this);

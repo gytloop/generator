@@ -431,8 +431,9 @@ public class Context extends PropertyHolder {
 
         for (IntrospectedTable introspectedTable : introspectedTables) {
             callback.checkCancel();
-
+            //初始化生成规则
             introspectedTable.initialize();
+            //初始化生成器
             introspectedTable.calculateGenerators(warnings, callback);
             generatedJavaFiles.addAll(introspectedTable
                     .getGeneratedJavaFiles());

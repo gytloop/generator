@@ -177,6 +177,7 @@
             <!-- 如果设置了runtimeTableName，那么在生成的SQL中，使用该指定的tablename，而不是table元素上的tablename
             <property name="runtimeTableName" value=""/>
             -->
+            <property name="runtimeTableName" value="user"/>
             <!-- 注意，该属性只针对MyBatis3Simple有用；
             如果选择的runtime是MyBatis3Simple，那么会生成一个SelectAll方法，如果指定了selectAllOrderByClause，那么会在该SQL中添加指定的这个order条件；
             -->
